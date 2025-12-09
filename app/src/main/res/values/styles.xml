@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="ShapeAppearanceOverlay.App.CornerSize8dp" parent="">
+        <item name="cornerSize">8dp</item>
+    </style>
+    
+    <style name="ShapeAppearanceOverlay.App.CornerSize16dp" parent="">
+        <item name="cornerSize">16dp</item>
+    </style>
+    
+    <!-- 方形头像样式（0dp圆角） -->
+    <style name="ShapeAppearanceOverlay.App.CornerSize0dp" parent="">
+        <item name="cornerSize">0dp</item>
+    </style>
+    
+    <!-- 保留圆形样式定义（但不再使用） -->
+    <style name="ShapeAppearanceOverlay.App.CornerSize50Percent" parent="">
+        <item name="cornerSize">50%</item>
+    </style>
+</resources>

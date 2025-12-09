@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 外部存储文件路径 -->
+    <external-files-path name="tongxun_files" path="Tongxun/" />
+    <!-- 内部存储文件路径 -->
+    <files-path name="tongxun_files_internal" path="Tongxun/" />
+    <!-- 缓存目录 -->
+    <cache-path name="tongxun_cache" path="." />
+</paths>
+

@@ -1,0 +1,12 @@
+# 快速上传代码命令
+
+## 在PowerShell中执行：
+
+# 1. 进入项目目录
+cd E:\Tongxun
+
+# 2. 上传server目录
+scp -r server root@47.116.197.230:/var/www/tongxun/
+
+# 系统会提示输入服务器密码，输入后开始上传
+
