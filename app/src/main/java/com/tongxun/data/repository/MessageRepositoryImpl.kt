@@ -16,6 +16,8 @@ import com.tongxun.domain.repository.MessageRepository
 import com.tongxun.domain.repository.UserRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -126,6 +128,13 @@ class MessageRepositoryImpl @Inject constructor(
         android.util.Log.e(TAG, "📋 已删除的消息ID数量: ${deletedMessageIds.size}")
         
         return messageDao.getMessagesFlow(conversationId)
+            .onStart {
+                android.util.Log.e(TAG, "🔥🔥🔥 开始收集消息 Flow - conversationId: ${conversationId.take(32)}...")
+            }
+            .catch { e ->
+                android.util.Log.e(TAG, "❌❌❌ 消息 Flow 收集出错 - conversationId: ${conversationId.take(32)}...", e)
+                emit(emptyList())
+            }
             .map { messages ->
                 android.util.Log.e(TAG, "🔥🔥🔥 getMessages() 收到消息列表 - conversationId: ${conversationId.take(32)}..., 消息数量: ${messages.size}")
                 

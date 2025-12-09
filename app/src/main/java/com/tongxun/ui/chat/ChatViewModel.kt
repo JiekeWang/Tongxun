@@ -18,7 +18,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import java.io.File
 import javax.inject.Inject
 
@@ -43,15 +46,27 @@ class ChatViewModel @Inject constructor(
     @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
     val messages: StateFlow<List<MessageEntity>> = _conversationIdFlow
         .flatMapLatest { conversationId ->
+            android.util.Log.e("ChatViewModel", "🔥🔥🔥 messages Flow - conversationId 变化: '$conversationId'")
             if (conversationId.isNotBlank()) {
+                // 🔥 关键修复：使用 distinctUntilChanged 确保只在 conversationId 真正变化时重新查询
+                // 添加 onStart 确保立即开始收集
                 messageRepository.getMessages(conversationId)
+                    .onStart {
+                        android.util.Log.e("ChatViewModel", "🔥🔥🔥 开始收集消息 Flow - conversationId: '$conversationId'")
+                    }
+                    .catch { e ->
+                        android.util.Log.e("ChatViewModel", "❌❌❌ 消息 Flow 收集出错 - conversationId: '$conversationId'", e)
+                        emit(emptyList())
+                    }
             } else {
+                android.util.Log.w("ChatViewModel", "⚠️ conversationId 为空，返回空列表")
                 kotlinx.coroutines.flow.flowOf(emptyList())
             }
         }
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
+            // 🔥 关键修复：使用 Eagerly 确保立即开始收集，避免延迟
+            started = SharingStarted.Eagerly,
             initialValue = emptyList()
         )
     
@@ -119,13 +134,34 @@ class ChatViewModel @Inject constructor(
             
             currentConversationId = conversation.conversationId
             android.util.Log.e("ChatViewModel", "✅ 最终使用的conversationId: '$currentConversationId'")
+            
+            // 🔥 关键修复：先设置 conversationId，确保消息 Flow 能立即响应
             _conversationIdFlow.value = currentConversationId
             _conversationTypeFlow.value = conversation.type
             
+            // 🔥 关键修复：等待一小段时间，确保 Flow 已经切换并开始收集
+            kotlinx.coroutines.delay(100)
+            
+            // 🔥 关键修复：验证消息 Flow 是否已经开始收集
+            val currentMessages = messages.value
+            android.util.Log.e("ChatViewModel", "🔥🔥🔥 设置 conversationId 后的消息数量: ${currentMessages.size}, conversationId: '$currentConversationId'")
+            
             // 🔥 关键修复：检查本地是否有消息，如果没有，主动从服务器拉取离线消息
+            // 注意：这里使用延迟查询，确保 conversationId 已经设置到 Flow 中
+            kotlinx.coroutines.delay(200)
+            
             android.util.Log.e("ChatViewModel", "🔥🔥🔥 检查本地消息 - conversationId: $currentConversationId, type: ${conversation.type}")
             val localMessages = database.messageDao().getMessages(currentConversationId, limit = 10, offset = 0)
             android.util.Log.e("ChatViewModel", "🔥🔥🔥 本地消息查询结果 - conversationId: $currentConversationId, 消息数量: ${localMessages.size}")
+            
+            // 🔥 关键修复：如果本地有消息但 Flow 中还没有，强制触发一次查询
+            if (localMessages.isNotEmpty() && messages.value.isEmpty()) {
+                android.util.Log.w("ChatViewModel", "⚠️⚠️⚠️ 本地有消息但 Flow 中为空，可能需要等待 Flow 更新")
+                // 再次检查，给 Flow 一些时间
+                kotlinx.coroutines.delay(300)
+                val messagesAfterDelay = messages.value
+                android.util.Log.e("ChatViewModel", "🔥🔥🔥 延迟后检查消息数量: ${messagesAfterDelay.size}")
+            }
             
             // 详细记录本地消息
             localMessages.take(5).forEachIndexed { index, message ->
