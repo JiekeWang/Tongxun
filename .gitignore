@@ -128,7 +128,9 @@ app/build/generated/source/kapt/
 # 文档和脚本文件（包含敏感信息，不上传）
 docs/
 scripts/
+# 忽略所有 md 文件，但保留根目录的 README.md
 *.md
+!README.md
 *.ps1
 *.bat
 *.sh
