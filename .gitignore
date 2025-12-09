@@ -124,3 +124,14 @@ desktop.ini
 
 # Kapt generated files
 app/build/generated/source/kapt/
+
+# 文档和脚本文件（包含敏感信息，不上传）
+docs/
+scripts/
+*.md
+*.ps1
+*.bat
+*.sh
+*.txt
+*.env
+*.env.example
